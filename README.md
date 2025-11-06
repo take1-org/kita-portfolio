@@ -1,4 +1,4 @@
-```text
+```
 🏗️ AWS WordPress/WooCommerce Infrastructure (Terraform + ECS Fargate + GitHub Actions)
 ──────────────────────────────────────────────────────────────────────────────
 本リポジトリは、AWS上でWordPress/WooCommerceを運用するための
@@ -90,7 +90,7 @@ take1-project/
 .
 ├── README.md
 ├── docs/
-│   ├── architecture-ecs-integrated-unix-socket.png
+│   ├── arichitecture-ecs-woocommerce.png
 │   └── well-architected-summary.pdf
 ├── infra/
 │   ├── modules/

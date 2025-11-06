@@ -6,7 +6,7 @@ module "ecs_service" {
 
   name_prefix        = "${local.name_prefix}-woocommerce-service"
   vpc_id             = local.vpc_id
-  private_subnet_ids = [local.private_subnet_id_1a] # 1AZのみ
+  private_subnet_ids = [local.private_subnet_id_1a] # テスト時は、1AZのみ
 
   cluster             = module.ecs_cluster.cluster_name
   cluster_arn         = module.ecs_cluster.cluster_arn
