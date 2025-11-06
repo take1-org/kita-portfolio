@@ -1,0 +1,75 @@
+# ===============================
+# Terraform
+# ===============================
+**/.terraform/
+**/.terraform.tfstate.lock.info
+**/terraform.tfstate
+**/terraform.tfstate.*
+**/crash.log
+
+infra/envs/dev/app-data/
+infra/envs/dev/app-repository
+infra/envs/dev/dns
+infra/envs/dev/edge
+infra/envs/dev/foundations
+infra/envs/dev/iam
+
+/infra/modules/cloudfront/
+/infra/modules/app-data/
+/infra/modules/iam/
+/infra/modules/app-repository/
+/infra/modules/dns/
+/infra/modules/edge/
+/infra/modules/foundations/
+/infra/modules/route53
+/infra/modules/network
+/infra/modules/s3
+/infra/modules/vpc
+/infra/modules/securitygroup
+/infra/modules/ec2
+/infra/modules/ecr
+
+*.tfstate
+*.tfstate.*
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Vars
+*.tfvars
+*.auto.tfvars
+
+# Local backend artifacts
+terraform.tfstate.d/
+
+# Diagrams/exports cache
+*.drawio.bkp
+# Terraform provider lock file は共有推奨なので除外しない
+# **/.terraform.lock.hcl
+
+# ===============================
+# Local env / secrets
+# ===============================
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+
+# ===============================
+# Docker / Build
+# ===============================
+**/node_modules/
+**/vendor/
+**/dist/
+**/build/
+**/.DS_Store
+
+# ===============================
+# Editor / OS
+# ===============================
+.vscode/
+.idea/
+*.swp
+Thumbs.db

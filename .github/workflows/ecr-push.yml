@@ -1,0 +1,106 @@
+name: ecr-push
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "app/**" # app以下に変更があった場合のみ実行
+  pull_request:
+    paths:
+      - "app/**" # PR時もplan確認できるように
+  workflow_dispatch: # 手動実行ボタンも有効化
+
+permissions:
+  id-token: write # OIDCでAWSロールをAssumeするため必須
+  contents: read # リポジトリのソースを読む権限
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }} # ex: ap-northeast-1
+  AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }} # ex: 3805777xxxxx
+  ECR_REGISTRY: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    # --- 並列実行（nginx / php-fpm）設定 ---
+    strategy:
+      fail-fast: false # 片方が失敗しても、もう片方は続ける
+      matrix:
+        include:
+          - name: nginx
+            repo: ${{ vars.ECR_REPO_NGINX }} # ECRリポジトリ名（例: take1-ecs-dev-woocommerce-nginx）
+            context: app/ # ビルドコンテキスト（srcも含めるためapp/がベスト）
+            dockerfile: app/docker/nginx/Dockerfile
+          - name: php-fpm
+            repo: ${{ vars.ECR_REPO_PHP }} # ECRリポジトリ名（例: take1-ecs-dev-woocommerce-php）
+            context: app/
+            dockerfile: app/docker/php/Dockerfile
+
+    steps:
+      # ------------------------------------------------
+      # ① ソースコードをチェックアウト（必須）
+      # ------------------------------------------------
+      - uses: actions/checkout@v4 # v4はNode20対応。v3より新しい安定版。
+
+      # ------------------------------------------------
+      # ② AWS認証 (OIDC AssumeRole)
+      # ------------------------------------------------
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_ARN_ECR_PUSH }} # ECR push権限ロール
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: gha-ecr-push-${{ github.run_id }}
+
+      # ------------------------------------------------
+      # ③ ECRログイン
+      # ------------------------------------------------
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # ------------------------------------------------
+      # ④ Dockerタグを生成
+      # ------------------------------------------------
+      - name: Compute tags
+        id: prep
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          UNIQUE="${SHORT_SHA}-${GITHUB_RUN_ATTEMPT}"
+          echo "TAGS<<EOF" >> "$GITHUB_OUTPUT"
+          echo "${UNIQUE}" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      # ------------------------------------------------
+      # ⑤ Docker Build & Push
+      # ------------------------------------------------
+      - name: Build & Push ${{ matrix.name }}
+        id: docker-build
+        uses: docker/build-push-action@v6 # buildx対応、最新安定版
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          provenance: false
+          platforms: linux/amd64
+          tags: |
+            ${{ env.ECR_REGISTRY }}/${{ matrix.repo }}:${{ steps.prep.outputs.TAGS }}
+
+      # ------------------------------------------------
+      # ⑥ digest情報を出力・保存
+      # ------------------------------------------------
+      - name: Save digest (${{ matrix.name }})
+        run: |
+          echo "IMAGE=${{ env.ECR_REGISTRY }}/${{ matrix.repo }}@${{ steps.docker-build.outputs.digest }}" > image-${{ matrix.name }}.txt
+          echo "IMAGE_URI=${{ env.ECR_REGISTRY }}/${{ matrix.repo }}" >> image-${{ matrix.name }}.txt
+          echo "DIGEST=${{ steps.docker-build.outputs.digest }}" >> image-${{ matrix.name }}.txt
+
+      # ------------------------------------------------
+      # ⑦ digestをアーティファクトとしてアップロード
+      # ------------------------------------------------
+      - name: Upload digests
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-digests-${{ matrix.name }} # ← ここをユニーク化
+          path: image-${{ matrix.name }}.txt
+          if-no-files-found: error
