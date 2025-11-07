@@ -1,14 +1,15 @@
 ```
-🏗️ AWS WordPress/WooCommerce Infrastructure (Terraform + ECS Fargate + GitHub Actions)
+⏹️AWS WordPress/WooCommerce Infrastructure (Terraform + ECS Fargate + GitHub Actions)
 ──────────────────────────────────────────────────────────────────────────────
 本リポジトリは、AWS上でWordPress/WooCommerceを運用するための
 Well-Architected基準に準拠したインフラ構成を示すポートフォリオです。
 ECS Fargate・Terraform・GitHub Actions(OIDC) を中心に、
 本番運用を想定した設計を一部コード公開しています。
+tfvars等アカウント情報が含まれるファイルは、非公開としています。
 ──────────────────────────────────────────────────────────────────────────────
 
 
-📘 概要
+⏹️概要
 ──────────────────────────────────────────────────────────────────────────────
 ・目的 : Terraform と GitHub Actions による自動化構成の学習・検証
 ・対象 : AWS Fargate で WordPress/WooCommerce を構築するインフラ層
@@ -109,16 +110,16 @@ take1-project/
 
 ⚙️ 実装済みコンポーネント
 ──────────────────────────────────────────────────────────────────────────────
-| カテゴリ                                | 実装状況      | 説明                                         
-|----------------------------------------|---------------|----------------------------------------------
-| CloudFront / WAF / Route53             | ✅ 完成        | HTTPSエンドツーエンド構成                    
-| ECS / Fargate (nginx+php)              | ✅ 完成        | Unixソケット通信構成（/run/php-fpm/php-fpm.sock） 
-| EFS (wp-content)                       | ✅ 完成        | 永続ボリューム構成                          
-| ECS AutoScaling                        | ✅ 完成        | Target Tracking (CPU 70%)                   
-| GitHub Actions (OIDC)                  | ✅ 完成        | ECR Push → ECS Deploy 自動化                 
+| カテゴリ                                | 実装状況        | 説明                                         
+|----------------------------------------|------------------|----------------------------------------------
+| CloudFront / WAF / Route53             | ✅ 完成         | HTTPSエンドツーエンド構成                    
+| ECS / Fargate (nginx+php)              | ✅ 完成         | Unixソケット通信構成（/run/php-fpm/php-fpm.sock） 
+| EFS (wp-content)                       | ✅ 完成         | 永続ボリューム構成                          
+| ECS AutoScaling                        | ✅ 完成         | Target Tracking (CPU 70%)                   
+| GitHub Actions (OIDC)                  | ✅ 完成         | ECR Push → ECS Deploy 自動化                 
 | RDS (Aurora MySQL)                     | 🟡 構築経験あり | IaC化設計済み（未公開）                      
 | Redis (ElastiCache)                    | 🟡 構築経験あり | WooCommerceキャッシュ層（設計済）             
-| RDS Proxy                              | ⚪ 設計中       | コネクションプーリング設計中                 
+| RDS Proxy                              | ⚪ 設計中       | IAM認証、コネクションプーリング設計中                 
 | API Gateway / Lambda / DynamoDB        | ✅ 実装経験あり | Stripe Webhook連携                          
 | AWS WAF                                | ✅ 実装経験あり | Managed Rules + Custom IPSet + Rate-Based 制御 
 ──────────────────────────────────────────────────────────────────────────────
@@ -160,10 +161,10 @@ take1-project/
 
 💾 Data Layer（設計・構築状況）
 ──────────────────────────────────────────────────────────────────────────────
-| コンポーネント          | ステータス       | 備考                                     
-|-------------------------|------------------|------------------------------------------
+| コンポーネント          | ステータス        | 備考                                     
+|-------------------------|-------------------|------------------------------------------
 | RDS (Aurora MySQL)      | 🟡 構築経験あり  | Terraform IaC化予定                      
-| RDS Proxy               | ⚪ 設計中         | ECS再デプロイ時のDB安定化対策            
+| RDS Proxy               | ⚪ 設計中        | ECS再デプロイ時のDB安定化対策            
 | Redis (ElastiCache)     | 🟡 構築経験あり  | WooCommerceセッション/キャッシュ層       
 ──────────────────────────────────────────────────────────────────────────────
 
@@ -210,7 +211,7 @@ AWS Managed Rules + IPSet + Rate-Based Rules による攻撃防御を実装。
 🧠 運用性・セキュリティ設計
 ──────────────────────────────────────────────────────────────────────────────
 ・IAMロール最小権限（ECSタスク実行 / OIDC / CloudFront制御）
-・Terraformリモートステート：S3 + DynamoDBロック
+・Terraformリモートステート：S3（DynamoDB非推奨となった為）
 ・CloudWatch Logs による統合ログ監視
 ・ECS Exec による安全な運用保守
 ──────────────────────────────────────────────────────────────────────────────
