@@ -19,7 +19,8 @@ resource "aws_security_group" "this" {
 
 # Tasks 80番は ALB SG からのみ許可
 resource "aws_vpc_security_group_ingress_rule" "ecs_tasks_ingress" {
-  count                        = var.enable_ecs_service ? 1 : 0
+  #count                        = var.enable_ecs_service ? 1 : 0
+  count                        = var.enable_ecs_service && var.alb_sg_id != null && var.alb_sg_id != "" ? 1 : 0
   security_group_id            = aws_security_group.this[0].id
   referenced_security_group_id = var.alb_sg_id # Tasks 80番は ALB SG からのみ許可
   from_port                    = 80

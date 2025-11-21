@@ -19,10 +19,10 @@ locals {
 
   # remote state(app_repository) から受ける
   #************************************************************************************************************************************
-  image_tag = "xxxxxxxx" # 固定値。CI/CD連携で動的にする場合は変更予定   *********************************************************
+  # image_tag = "372f419-1" # 固定値。CI/CD連携で動的にする場合は変更予定   *********************************************************
   #************************************************************************************************************************************
-  php_image   = "${data.terraform_remote_state.app_repository.outputs.ecr_repository_urls["php"]}:${local.image_tag}"
-  nginx_image = "${data.terraform_remote_state.app_repository.outputs.ecr_repository_urls["nginx"]}:${local.image_tag}"
+  php_image   = "${data.terraform_remote_state.app_repository.outputs.ecr_repository_urls["php"]}:${var.image_tag}"
+  nginx_image = "${data.terraform_remote_state.app_repository.outputs.ecr_repository_urls["nginx"]}:${var.image_tag}"
 
 
   # 1AZだけ使う（検証用）

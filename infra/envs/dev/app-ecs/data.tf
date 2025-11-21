@@ -6,10 +6,10 @@
 data "terraform_remote_state" "foundations" {
   backend = "s3"
   config = {
-    bucket  = var.remote_state_bucket
-    key     = var.remote_state_key
-    region  = var.remote_state_region
-    profile = "kita-sso"
+    bucket = var.remote_state_bucket
+    key    = var.remote_state_key
+    region = var.remote_state_region
+    #profile = "kita-sso"
   }
 }
 # ---------------------------------------------
@@ -30,8 +30,8 @@ data "terraform_remote_state" "iam" {
 data "terraform_remote_state" "app_repository" {
   backend = "s3"
   config = {
-    bucket = "take1-tfstate-bucket"
-    key    = "tfstate/take1-project/dev/app-repository/terraform.tfstate"
+    bucket = "<<<your-backend-bucket>>>"
+    key    = "tfstate/<<<your-project>>>/dev/app-repository/terraform.tfstate"
     region = "us-east-1"
   }
 }
@@ -42,8 +42,8 @@ data "terraform_remote_state" "app_repository" {
 data "terraform_remote_state" "edge" {
   backend = "s3"
   config = {
-    bucket = "take1-tfstate-bucket"
-    key    = "tfstate/take1-project/dev/edge/terraform.tfstate"
+    bucket = "<<<your-backend-bucket>>>"
+    key    = "tfstate/<<<your-project>>>/dev/edge/terraform.tfstate"
     region = "us-east-1"
   }
 }

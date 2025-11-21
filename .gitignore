@@ -37,8 +37,8 @@ override.tf.json
 *_override.tf.json
 
 # Vars
-*.tfvars
-*.auto.tfvars
+#*.tfvars
+#*.auto.tfvars
 
 # Local backend artifacts
 terraform.tfstate.d/

@@ -35,7 +35,7 @@ variable "enable_task_definition" {
 
 variable "enable_efs" {
   type    = bool
-  default = true
+  default = false
   validation {
     condition = (
       var.enable_efs == false ||

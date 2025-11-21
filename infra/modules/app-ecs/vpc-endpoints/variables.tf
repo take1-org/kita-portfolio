@@ -65,7 +65,7 @@ variable "ecs_tasks_sg_id" {
 
 variable "enable_endpoints" {
   type    = bool
-  default = true
+  default = false
 }
 
 variable "enable_ecs_endpoints" { //このエンドポイントは、ecs/fargateでは、不要
