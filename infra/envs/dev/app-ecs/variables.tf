@@ -88,6 +88,11 @@ variable "nginx_image" {
   default = "public.ecr.aws/nginx/nginx:latest"
 }
 
+variable "image_tag" {
+  type    = string
+  default = ""
+}
+
 variable "php_environment" {
   type    = list(map(string))
   default = []

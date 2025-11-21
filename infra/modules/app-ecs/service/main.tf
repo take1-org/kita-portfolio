@@ -22,18 +22,18 @@ resource "aws_ecs_service" "this" {
     security_groups  = [aws_security_group.this[0].id]
     assign_public_ip = false
   }
-  load_balancer {
+  /*   load_balancer {
     target_group_arn = var.target_group_arn
     container_name   = "nginx"
     container_port   = 80
-  }
+  } */
   health_check_grace_period_seconds = 180
 
-  lifecycle {
+  /*   lifecycle {
     ignore_changes = [
       task_definition # 後で :revision が増える場合に備え、明示的に更新するときだけ差し替える
     ]
-  }
+  } */
   tags = merge(
     var.common_tags,
     { Name = "${var.name_prefix}-service" },

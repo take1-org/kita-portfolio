@@ -10,12 +10,8 @@ resource "aws_lb_listener" "this" {
   protocol          = "HTTP"
 
   default_action {
-    type = "redirect"
-    redirect {
-      port        = "443"
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
-    }
+    type             = "forward"
+    target_group_arn = try(one(aws_lb_target_group.this[*].arn), null)
   }
 }
 

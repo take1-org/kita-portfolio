@@ -29,7 +29,7 @@ variable "env" {
 
 variable "enable_efs" {
   type    = bool
-  default = true
+  default = false
 }
 
 variable "vpc_id" {

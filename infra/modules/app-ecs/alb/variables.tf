@@ -9,7 +9,7 @@ variable "enable_tg" {
 
 variable "enable_alb" {
   type    = bool
-  default = true
+  default = false
 }
 
 variable "enable_tasks_sg" {
