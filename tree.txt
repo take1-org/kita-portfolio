@@ -1,0 +1,200 @@
+.
+├── README.md
+├── app
+│   ├── docker
+│   │   ├── nginx
+│   │   │   ├── Dockerfile
+│   │   │   └── nginx.conf
+│   │   └── php
+│   │       ├── Dockerfile
+│   │       └── entrypoint.sh
+│   └── docker-compose.yml
+├── backup.bundle
+├── docs
+│   ├── arichitecture-ecs-woocommerce.png
+│   └── wellArchitectedSummary.pdf
+├── infra
+│   ├── envs
+│   │   └── dev
+│   │       ├── app-ecs
+│   │       │   ├── alb.tf
+│   │       │   ├── backend.tf
+│   │       │   ├── cluster.tf
+│   │       │   ├── data.tf
+│   │       │   ├── efs.tf
+│   │       │   ├── endpoints.tf
+│   │       │   ├── locals.tf
+│   │       │   ├── log-group.tf
+│   │       │   ├── outputs.tf
+│   │       │   ├── provider.tf
+│   │       │   ├── service.tf
+│   │       │   ├── task-definition.tf
+│   │       │   ├── terraform-docs.md
+│   │       │   ├── terraform.tfvars
+│   │       │   ├── variables.tf
+│   │       │   └── versionts.tf
+│   │       └── iam
+│   │           ├── backend.tf
+│   │           ├── data.tf
+│   │           ├── ecs-execution-role.tf
+│   │           ├── ecs-task-role.tf
+│   │           ├── gha-oidc.tf
+│   │           ├── locals.tf
+│   │           ├── outputs.tf
+│   │           ├── provider.tf
+│   │           ├── terraform.tfvars
+│   │           ├── variables.tf
+│   │           └── versionts.tf
+│   └── modules
+│       ├── app-ecs
+│       │   ├── alb
+│       │   │   ├── listner.tf
+│       │   │   ├── locals.tf
+│       │   │   ├── main.tf
+│       │   │   ├── outputs.tf
+│       │   │   ├── securitygroup.tf
+│       │   │   ├── targetgroup.tf
+│       │   │   └── variables.tf
+│       │   ├── cluster
+│       │   │   ├── main.tf
+│       │   │   ├── outputs.tf
+│       │   │   └── variables.tf
+│       │   ├── efs
+│       │   │   ├── main.tf
+│       │   │   ├── outputs.tf
+│       │   │   ├── securitygroup.tf
+│       │   │   └── variables.tf
+│       │   ├── log-group
+│       │   │   ├── main.tf
+│       │   │   ├── outputs.tf
+│       │   │   └── variables.tf
+│       │   ├── service
+│       │   │   ├── main.tf
+│       │   │   ├── outputs.tf
+│       │   │   ├── securitygroup.tf
+│       │   │   └── variables.tf
+│       │   ├── task-definition
+│       │   │   ├── locals.tf
+│       │   │   ├── main.tf
+│       │   │   ├── outputs.tf
+│       │   │   └── variable.tf
+│       │   └── vpc-endpoints
+│       │       ├── locals.tf
+│       │       ├── main.tf
+│       │       ├── outputs.tf
+│       │       ├── secucitygroup.tf
+│       │       └── variables.tf
+│       ├── cloudfront
+│       │   ├── acm
+│       │   │   ├── outputs.tf
+│       │   │   └── variables.tf
+│       │   ├── distribution
+│       │   │   ├── data.tf
+│       │   │   ├── distribution.tf
+│       │   │   ├── outputs.tf
+│       │   │   └── variables.tf
+│       │   └── s3
+│       │       ├── main.tf
+│       │       ├── outputs.tf
+│       │       └── variables.tf
+│       ├── ec2
+│       │   └── bastion
+│       │       ├── bastion.tf
+│       │       ├── data.tf
+│       │       ├── outputs.tf
+│       │       ├── terraform.tfvars
+│       │       └── variables.tf
+│       ├── ecr
+│       │   └── repository
+│       │       ├── main.tf
+│       │       ├── outputs.tf
+│       │       └── variables.tf
+│       ├── iam
+│       │   ├── ecs-execution-role
+│       │   │   ├── data.tf
+│       │   │   ├── locals.tf
+│       │   │   ├── main.tf
+│       │   │   ├── outputs.tf
+│       │   │   └── variables.tf
+│       │   ├── ecs-task-role
+│       │   │   ├── data.tf
+│       │   │   ├── locals.tf
+│       │   │   ├── main.tf
+│       │   │   ├── outputs.tf
+│       │   │   └── variables.tf
+│       │   ├── gha-oidc-role
+│       │   │   ├── data.tf
+│       │   │   ├── main.tf
+│       │   │   ├── outputs.tf
+│       │   │   └── variables.tf
+│       │   ├── github-oidc-provider
+│       │   │   ├── main.tf
+│       │   │   ├── outputs.tf
+│       │   │   └── variables.tf
+│       │   └── policies
+│       ├── network
+│       │   ├── eip-egress
+│       │   │   ├── eip-egress.tf
+│       │   │   ├── outputs.tf
+│       │   │   └── variables.tf
+│       │   ├── igw
+│       │   │   ├── igw.tf
+│       │   │   ├── outputs.tf
+│       │   │   └── variables.tf
+│       │   ├── nat-gateway
+│       │   │   ├── nat-gateway.tf
+│       │   │   ├── outputs.tf
+│       │   │   └── variables.tf
+│       │   ├── routetable-default
+│       │   │   ├── routetable-default.tf
+│       │   │   └── variables.tf
+│       │   ├── routetable-private
+│       │   │   ├── outputs.tf
+│       │   │   ├── routetable-private.tf
+│       │   │   └── variables.tf
+│       │   ├── routetable-public
+│       │   │   ├── routetable-public.tf
+│       │   │   └── variables.tf
+│       │   ├── routetable-rds
+│       │   │   ├── routetable-rds.tf
+│       │   │   └── variables.tf
+│       │   └── subnets
+│       │       ├── outputs.tf
+│       │       ├── subnet.tf
+│       │       └── variables.tf
+│       ├── route53
+│       │   └── route53-records
+│       │       ├── data.tf
+│       │       ├── locals.tf
+│       │       ├── outputs.tf
+│       │       ├── route53.tf
+│       │       └── variables.tf
+│       ├── s3
+│       │   ├── logging
+│       │   │   ├── data.tf
+│       │   │   ├── locals.tf
+│       │   │   ├── main.tf
+│       │   │   ├── outputs.tf
+│       │   │   └── variables.tf
+│       │   └── wp-media
+│       │       ├── data.tf
+│       │       ├── locals.tf
+│       │       ├── main.tf
+│       │       ├── outputs.tf
+│       │       └── variables.tf
+│       ├── securitygroup
+│       │   └── foundations
+│       │       ├── bastion_sg
+│       │       │   ├── main.tf
+│       │       │   ├── outputs.tf
+│       │       │   └── variables.tf
+│       │       └── outputs.tf
+│       ├── vpc
+│       │   ├── endpoint.tf
+│       │   ├── outputs.tf
+│       │   ├── variables.tf
+│       │   └── vpc.tf
+│       └── waf
+└── tree.txt
+
+53 directories, 145 files

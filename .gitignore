@@ -12,11 +12,11 @@ infra/envs/dev/app-repository
 infra/envs/dev/dns
 infra/envs/dev/edge
 infra/envs/dev/foundations
-infra/envs/dev/iam
+#infra/envs/dev/iam
 
 /infra/modules/cloudfront/
 /infra/modules/app-data/
-/infra/modules/iam/
+#/infra/modules/iam/
 /infra/modules/app-repository/
 /infra/modules/dns/
 /infra/modules/edge/

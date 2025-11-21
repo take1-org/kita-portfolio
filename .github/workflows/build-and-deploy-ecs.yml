@@ -1,0 +1,149 @@
+#2025.11.19
+name: build-and-deploy-ecs
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "app/**" # app以下に変更があった場合のみ実行
+  pull_request:
+    paths:
+      - "app/**" # PR時もビルド確認できるように
+  workflow_dispatch: # 手動実行も可能
+
+permissions:
+  id-token: write # OIDCでAWSロールをAssumeするため必須
+  contents: read # リポジトリのソースを読む権限
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }} # ex: ap-northeast-1
+  AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }} # ex: 3805777xxxxx
+  ECR_REGISTRY: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com
+
+jobs:
+  # ------------------------------------------------
+  # 0. image_tag を一度だけ計算して、全Jobで使い回す
+  # ------------------------------------------------
+  prepare-tag:
+    runs-on: ubuntu-latest
+
+    outputs:
+      image_tag: ${{ steps.prep.outputs.image_tag }}
+
+    steps:
+      - name: Compute image tag
+        id: prep
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          IMAGE_TAG="${SHORT_SHA}-${GITHUB_RUN_ID}"
+          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+
+  # ------------------------------------------------
+  # 1. ECR への build & push（nginx / php-fpm 並列）
+  # ------------------------------------------------
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    needs: prepare-tag
+
+    strategy:
+      fail-fast: false # 片方が失敗しても、もう片方は続ける
+      matrix:
+        include:
+          - name: nginx
+            repo: ${{ vars.ECR_REPO_NGINX }} # 例: take1-ecs-dev-woocommerce-nginx
+            context: app/
+            dockerfile: app/docker/nginx/Dockerfile
+          - name: php-fpm
+            repo: ${{ vars.ECR_REPO_PHP }} # 例: take1-ecs-dev-woocommerce-php
+            context: app/
+            dockerfile: app/docker/php/Dockerfile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_ARN_ECR_PUSH }} # ECR push権限ロール
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: gha-ecr-push-${{ github.run_id }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & Push ${{ matrix.name }}
+        id: docker-build
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          provenance: false
+          platforms: linux/amd64
+          tags: |
+            ${{ env.ECR_REGISTRY }}/${{ matrix.repo }}:${{ needs.prepare-tag.outputs.image_tag }}
+
+      - name: Save digest (${{ matrix.name }})
+        run: |
+          echo "IMAGE=${{ env.ECR_REGISTRY }}/${{ matrix.repo }}@${{ steps.docker-build.outputs.digest }}" > image-${{ matrix.name }}.txt
+          echo "IMAGE_URI=${{ env.ECR_REGISTRY }}/${{ matrix.repo }}" >> image-${{ matrix.name }}.txt
+          echo "DIGEST=${{ steps.docker-build.outputs.digest }}" >> image-${{ matrix.name }}.txt
+
+      - name: Upload digests
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-digests-${{ matrix.name }}
+          path: image-${{ matrix.name }}.txt
+          if-no-files-found: error
+
+  # ------------------------------------------------
+  # 2. Terraform で ECS デプロイ（承認付き）
+  # ------------------------------------------------
+  deploy:
+    # build-and-push が終わってから実行
+    needs:
+      - prepare-tag
+      - build-and-push
+
+    runs-on: ubuntu-latest
+
+    # ★ ここで Environment を指定 → GitHub 側で Required reviewers を設定すれば「承認待ち」になる
+    environment:
+      name: dev-ecs-deploy
+      # url は任意（DevサイトのURLなど）。なくても動作には影響なし
+      # url: https://dev.woocommerce.take-one.link
+
+    # PR 時にはデプロイしない。main への push or 手動実行のみ。
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+
+    env:
+      IMAGE_TAG: ${{ needs.prepare-tag.outputs.image_tag }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_ARN_DEPLOY }} # Terraform用ロール
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: take1-gha-tf-deploy-${{ github.run_id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: Terraform Init
+        working-directory: infra/envs/dev/app-ecs
+        run: terraform init -input=false -reconfigure
+
+      - name: Terraform Plan
+        working-directory: infra/envs/dev/app-ecs
+        run: terraform plan -var "image_tag=${IMAGE_TAG}"
+
+      - name: Terraform Apply
+        working-directory: infra/envs/dev/app-ecs
+        run: terraform apply -auto-approve -var "image_tag=${IMAGE_TAG}"
