@@ -233,7 +233,8 @@ AWS Managed Rules + IPSet + Rate-Based Rules による攻撃防御を実装。
 🧠 運用性・セキュリティ設計
 ──────────────────────────────────────────────────────────────────────────────
 ・IAMロール最小権限（ECSタスク実行 / OIDC / CloudFront制御）
-・Terraformリモートステート：S3（DynamoDB非推奨となった為）
+・Terraformリモートステート：S3（terraform v1.11.0以降では、DynamoDBロック機能は、非推奨となった為、
+　S3 native lockingを採択）
 ・CloudWatch Logs による統合ログ監視
 ・ECS Exec による安全な運用保守
 ──────────────────────────────────────────────────────────────────────────────
