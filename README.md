@@ -248,7 +248,7 @@ AWS Managed Rules + IPSet + Rate-Based Rules による攻撃防御を実装。
 ・Stripe Webhook の Terraform化
 ・AutoScaling モジュール共通化
 ──────────────────────────────────────────────────────────────────────────────
-
+transfer to organization 2026.1.3
 
 © 2025 Kita  
 本リポジトリは技術紹介を目的として一部構成を公開したものであり、  
